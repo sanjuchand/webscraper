@@ -39,13 +39,19 @@ def get_table_headers(table):
     headers = []
     for th in table.find("tr").find_all("th"):
         headers.append(th.text.strip())
+    headers.extend(["case_no", "cino", "app_token"])
+    logging.info(f"[+] Found headers: {headers}")
     return headers
 
 
 def get_table_rows(table):
     """Given a table, returns all its rows"""
     rows = []
-    for tr in table.find_all("tr")[1:]:
+    # print every row in the table
+    # rows = table.find_all("tr")[2:4]
+    # for tr in rows:
+    #     print(str(tr))
+    for tr in table.find_all("tr")[2:]:
         cells = []
         # grab all td tags in this table row
         tds = tr.find_all("td")
@@ -55,10 +61,22 @@ def get_table_rows(table):
             ths = tr.find_all("th")
             for th in ths:
                 cells.append(th.text.strip())
+            cells.extend(["case_no", "cino", "app_token"])
         else:
             # use regular td tags
             for td in tds:
                 cells.append(td.text.strip())
+                a_tag = td.find("a")
+                if a_tag:
+                    # Perform some action if <a> tag is found
+                    a_href = a_tag["href"]
+                    app_token = re.search(r"app_token=(\w+)", a_href).group(1)
+
+                    a_onclick = a_tag["onclick"]
+                    case_no = re.search(r"viewHistory\((\d+)", a_onclick).group(1)
+                    cino = re.search(r"viewHistory\(\d+,'(\w+)", a_onclick).group(1)
+                    cells.extend([case_no, cino, app_token])
+
         rows.append(cells)
     return rows
 
